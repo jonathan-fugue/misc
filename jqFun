@@ -1,13 +1,3 @@
 ```
-$ fugue status <Network Alias> | jq -r '.resources.subnets[] | [.value.subnet.VpcId,.value.subnet.SubnetId,.value.subnet.AvailabilityZone]'
-[
-  "vpc-184c9b61",
-  "subnet-d77ca5fb",
-  "us-east-1a"
-]
-[
-  "vpc-184c9b61",
-  "subnet-2673aa0a",
-  "us-east-1c"
-]
+fugue status Networks | jq '.resources.subnets[].value.subnet | {SubnetId, VpcId, AvailabilityZone, name: (.Tags[] | select(.Key == "Name") | .Value)}'
 ```
