@@ -1,0 +1,29 @@
+composition
+
+import Fugue.AWS.EC2 as EC2
+import Fugue.AWS as AWS
+import Fugue.AWS.Pattern.Network as Network
+
+network: Network.public {
+  name: "net",
+  region: AWS.Us-east-1,
+  cidr: "10.0.0.0/16",
+  subnets: [
+    (AWS.A, "10.0.0.0/24"),
+  ],
+}
+
+allowSSH: EC2.SecurityGroup.new {
+  description: "Allow SSH traffic from the Internet",
+  ipPermissions: [EC2.IpPermission.ssh(EC2.IpPermission.Target.all)],
+  vpc: network.vpc
+}
+
+node: EC2.Instance.new {
+  keyName: "Demo",
+  instanceType: EC2.T2_small,
+  image: "ami-0ab2781c",
+  securityGroups: [allowSSH],
+  subnet: List.index(network.publicSubnets,0),
+  userData: " ",
+}
