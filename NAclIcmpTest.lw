@@ -1,0 +1,30 @@
+composition
+
+import Fugue.AWS as AWS
+import Fugue.AWS.EC2 as EC2
+import Fugue.AWS.Pattern.Network as Network
+
+network: Network.public {
+  name: "acl-example",
+  region: AWS.Us-west-2,
+  cidr: "10.42.0.0/16",
+  subnets: [
+    (AWS.A, "10.42.10.0/24"),
+  ],
+}
+
+publicAcls: EC2.NetworkAcl.new {
+  vpc: network.vpc,
+  entries: [
+    EC2.NetworkAclEntry {
+      ruleNumber: 100,
+      protocol: "1",
+      ruleAction: EC2.Allow,
+      cidrBlock: "0.0.0.0/0",
+      egress: False,
+      icmpTypeCode: EC2.IcmpTypeCode({type: 0, code: 0}),
+    }
+  ],
+  associations: network.publicSubnets,
+  tags: [AWS.tag("Name", "acl-example-public")],
+}

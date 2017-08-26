@@ -1,0 +1,22 @@
+composition
+
+import Fugue.AWS as AWS
+import Fugue.NetAddr as Net
+
+fun cidr(cidrBlock: String) -> Net.Cidr:
+  Optional.unpackOrError(
+    Net.Cidr.fromString(cidrBlock), "Invalid cidrBlock: " ++ cidrBlock
+  )
+
+cidrA: cidr("10.0.0.0/16")
+cidrB: cidr("10.0.0.0/24")
+cidrC: cidr("10.0.1.0/24")
+cidrD: cidr("10.1.0.0/16")
+cidrE: cidr("10.1.1.0/24")
+
+# Net.Cidr.include(IpAddress, Cidr) -> Bool
+debugA: Debug.traceValue {value: Net.Cidr.include(cidrA.network, cidrA)}
+debugB: Debug.traceValue {value: Net.Cidr.include(cidrA.network, cidrB)}
+debugC: Debug.traceValue {value: Net.Cidr.include(cidrA.network, cidrC)}
+debugD: Debug.traceValue {value: Net.Cidr.include(cidrA.network, cidrD)}
+debugE: Debug.traceValue {value: Net.Cidr.include(cidrA.network, cidrE)}
