@@ -4,6 +4,41 @@ import Fugue.AWS.EC2 as EC2
 import Fugue.AWS as AWS
 import Fugue.AWS.Pattern.Network as Network
 
+fun makeUserData {
+      requireFullPatch: Bool,
+      requireSSHStandard: Bool,
+    } -> String:
+  let userData: String.join("\n", [
+    string for (string, enable) in [
+      (useBash(), True),
+      (fullPatch(), requireFullPatch),
+      (configureOpenSSH(), requireSSHStandard),
+    ] if enable
+  ])
+  Debug.traceValue {value: userData};
+  userData
+
+fun useBash() -> String: 
+  Template.render {
+    data: {},
+    template:
+      '#! /bin/bash'
+  }
+
+fun fullPatch() -> String:
+  Template.render {
+    data: {},
+    template:
+      'Update the operating system'
+  }
+
+fun configureOpenSSH() -> String:
+  Template.render {
+    data: {},
+    template:
+      'Configure OpenSSH'
+  }
+
 network: Network.public {
   name: "net",
   region: AWS.Us-east-1,
@@ -19,11 +54,14 @@ allowSSH: EC2.SecurityGroup.new {
   vpc: network.vpc
 }
 
-node: EC2.Instance.new {
+ec2Instance: EC2.Instance.new {
+  image: "ami-0ab2781c",
   keyName: "Demo",
   instanceType: EC2.T2_small,
-  image: "ami-0ab2781c",
   securityGroups: [allowSSH],
   subnet: List.index(network.publicSubnets,0),
-  userData: " ",
+  userData: makeUserData {
+    requireFullPatch: True,
+    requireSSHStandard: True,
+  },
 }
